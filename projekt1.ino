@@ -7,22 +7,21 @@
 #include "SD.h"
 #include "SPI.h"
 
-
 #define MAIN_HEIGHT 200
 #define BUTTOM_HEIGHT 40
 #define MAIN_WIDTH 150
 
 #define REPORTING_PERIOD_MS 1000
 
-//Data oraz godzina
-RTC_TimeTypeDef RTCtime;
-RTC_DateTypeDef RTCDate;
-
 //Struktura do zapisu danych
 struct Data {
   uint8_t max; //maksymalna wartosc
   uint8_t min; //minimalna wartosc
 };
+
+//Data oraz godzina
+RTC_TimeTypeDef RTCtime;
+RTC_DateTypeDef RTCDate;
 
 //GLOWNE DANE PROGRAMOWE
 struct Data PULSE[24]; //Lista typu Data do zapisu parametrow pulsu z dnia
@@ -34,22 +33,6 @@ uint8_t alert_lv = 180; //Poziom alertu pulsu
 uint32_t tsLastReport = 0; //Wartosc czasowa ostatniego pomiaru
 uint32_t tsLastSave = 0; // Wartość czasowa ostatniego zapisu
 char* screenType[2] = {"Pulse", "Sa02"};
-
-//CZUJNIKI
-PulseOximeter pox;
-
-///PRZYCISKI WIRTUALNE
-HotZone Btn_Pulse(10, 0, 10 + MAIN_WIDTH, MAIN_HEIGHT);
-HotZone Btn_Sa02(160, 0, 160 + MAIN_WIDTH, MAIN_HEIGHT);
-HotZone Btn_Option1(10, 10, 300, 50);
-HotZone Btn_Option2(10, 55, 300, 95);
-HotZone Btn_Save(50, 200, 270, 240);
-HotZone Btn_Up(0, 0, 50, 240);
-HotZone Btn_Dn(270, 0, 320, 240);
-HotZone Btn_A(0, 200, 100, 240);
-HotZone Btn_B(110, 200, 210, 240);
-HotZone Btn_C(220, 200, 320, 240);
-TouchPoint_t touchPos;
 
 //STANY
 bool touchPressed = false;
@@ -65,6 +48,30 @@ char buff[1012]; //buffor na dane z pliku
 uint8_t *changing_param = NULL; //zmienna na wskaznik zmienianego parametru
 uint8_t changing_param_value; //Zmienna na wartosc zmienianiego parametru
 uint8_t chosenType = 0; //Wybrany typ PULSE, SPO2
+TouchPoint_t touchPos;
+
+//CZUJNIKI
+PulseOximeter pox;
+
+///PRZYCISKI WIRTUALNE
+
+//Przyciski ekranu startowego
+HotZone Btn_Pulse(10, 0, 10 + MAIN_WIDTH, MAIN_HEIGHT); //Przejscie do wykresu plusu
+HotZone Btn_Sa02(160, 0, 160 + MAIN_WIDTH, MAIN_HEIGHT); //Przejscie do wykresu SPO2
+
+//Przyciski ekranu ustawień
+HotZone Btn_Option1(10, 10, 300, 50); //Przejscie do ustawień poziomu alertu
+HotZone Btn_Option2(10, 55, 300, 95); //Przejscie do ustawień czestotliwości
+
+//Przyciski ekranu zmiany wartości parametru
+HotZone Btn_Save(50, 200, 270, 240); //Zapis wartości
+HotZone Btn_Up(0, 0, 50, 240); //Zwiększenie wartości
+HotZone Btn_Dn(270, 0, 320, 240); //Zmniejszenie wartości
+
+//Przyciski emitujące dedykowane przyciski
+HotZone Btn_A(0, 200, 100, 240); //Przycisk A
+HotZone Btn_B(110, 200, 210, 240); //Przycisk B
+HotZone Btn_C(220, 200, 320, 240); //Przycisk C
 
 //Funkcja do restartowania stanow
 void resetState()
@@ -266,7 +273,8 @@ void drawParameters()
 }
 
 //Funkcja do rysowania osi na wykresie
-void drawAxes() {
+void drawAxes() 
+{
   M5.Lcd.drawLine(10, 10, 10, 210, WHITE);
   M5.Lcd.drawLine(10, 210, 310, 210, WHITE);
 }
@@ -471,6 +479,8 @@ void setup()
 
   //Rysowanie ekranu startowego
   drawStartingScreen();
+  
+  //Pobranie i zapisanie dacnych
   readAndSave(PULSE, 0);
   readAndSave(SPO2, 1);
 }
